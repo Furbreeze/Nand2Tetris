@@ -1,0 +1,195 @@
+class Game {
+    field Tetris tetris;
+    field char input;
+    field bool game_over;
+    field int score, level, lines, wait_time;
+    field String level_text, score_text, lines_text;
+
+    constructor Game new() {
+        let tetris = Tetris.new();
+        let input = 0;
+        let level = 0;
+        let score = 0;
+        let wait_time = 0;
+        let game_over = false;
+        let level_text = " Level: ";
+        let score_text = " Score: ";
+        let lines_text = " Lines: ";
+
+        return this;
+    }
+
+    method void dispose() {
+        do tetris.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    method void loop() {
+        do Screen.setColor(1);
+        do Screen.drawRectangle(0, 0, 175, 255);
+        do Screen.drawRectangle(335, 0, 511, 255);
+
+        while (~game_over) {
+            do tetris.tick(input);
+            do update_display();
+            do get_wait_time();
+            do Sys.wait(wait_time);
+            do get_input();
+            do get_game_over();
+        }
+
+        do game_over_screen();
+        return;
+    }
+
+    method void update_display() {
+        var int boardX, boardY, index, x, y;
+        var Array board, piece;
+
+        let boardY = 0;
+        let board = tetris.get_board();
+
+        // update board
+        while (boardY < 16) {
+            let boardX = 0;
+            let piece = board[boardY];
+            while (boardX < 10) {
+                if (piece[boardX] > 0) {
+                    do drawBlock(boardX + (boardY * 512));
+                }
+                else {
+                    do clearBlock(boardX + (boardY * 512));
+                }
+                let boardX = boardX + 1;
+            }
+
+            let boardY = boardY + 1;
+        }
+
+        // update piece
+        let x = tetris.get_x();
+        let y = tetris.get_y();
+        let piece = tetris.get_piece();
+
+        let boardY = 3;
+        let boardX = 3;
+        
+        while (boardY > -1) {
+            let boardX = 3;
+            while (boardX > -1) {
+                if (piece[boardX + (boardY * 4)] > 0) {
+                    let index = (x + boardX) + ((y + boardY) * 512);
+                    if (index > 0 & index < 7712) {
+                        do drawBlock(index);
+                    }
+                }
+                let boardX = boardX - 1;
+            }
+            let boardY = boardY - 1;
+        }
+
+        let lines = tetris.get_lines();
+        // print score
+        let score = tetris.get_score();
+        do Output.printString(level_text);
+        do Output.printInt(level);
+        do Output.println();
+        do Output.printString(score_text);
+        do Output.printInt(score);
+        do Output.println();
+        do Output.printString(lines_text);
+        do Output.printInt(lines);
+        do Output.moveCursor(0,0);
+
+        return;
+    }
+
+    method int get_wait_time() {
+        let level = tetris.get_level();
+        let wait_time = (1500 - (level * 200));
+
+        if (wait_time < 0) {
+            let wait_time = 0;
+        }
+
+        return wait_time;
+    }
+
+    method void get_input() {
+        let input = Keyboard.keyPressed();
+        return;
+    }
+
+    method void get_game_over() {
+        let game_over = tetris.game_over();
+        return;
+    }
+
+    method void game_over_screen() {
+        do Screen.setColor(0);
+        do Screen.drawRectangle(176, 0, 335, 255);
+
+        // print score
+        let score = tetris.get_score();
+        do Output.printString("Game over!");
+        do Output.println();
+        do Output.printString("Final score: ");
+        do Output.printInt(score);
+        do Output.println();
+        do Output.printString("Final lines: ");
+        do Output.printInt(lines);
+        return;
+    }
+
+    method void clearBlock(int location) {
+        var int memAddress;
+        let memAddress = 16384+location+11;
+        
+        do Memory.poke(memAddress+0, 0);
+        do Memory.poke(memAddress+32, 0);
+        do Memory.poke(memAddress+64, 0);
+        do Memory.poke(memAddress+96, 0);
+
+        do Memory.poke(memAddress+128, 0);
+        do Memory.poke(memAddress+160, 0);
+        do Memory.poke(memAddress+192, 0);
+        do Memory.poke(memAddress+224, 0);
+
+        do Memory.poke(memAddress+256, 0);
+        do Memory.poke(memAddress+288, 0);
+        do Memory.poke(memAddress+320, 0);
+        do Memory.poke(memAddress+352, 0);
+     
+        do Memory.poke(memAddress+384, 0);
+        do Memory.poke(memAddress+416, 0);
+        do Memory.poke(memAddress+448, 0);
+        do Memory.poke(memAddress+480, 0);
+        return;
+    }
+
+    method void drawBlock(int location) {
+        var int memAddress;
+        let memAddress = 16384+location+11;
+        do Memory.poke(memAddress+0, 16380);
+        do Memory.poke(memAddress+32, 16386);
+        do Memory.poke(memAddress+64, -24583);
+        do Memory.poke(memAddress+96, -16387);
+
+        do Memory.poke(memAddress+128, -16387);
+        do Memory.poke(memAddress+160, -16387);
+        do Memory.poke(memAddress+192, -16387);
+        do Memory.poke(memAddress+224, -16387);
+
+        do Memory.poke(memAddress+256, -16387);
+        do Memory.poke(memAddress+288, -16387);
+        do Memory.poke(memAddress+320, -16387);
+        do Memory.poke(memAddress+352, -16387);
+     
+        do Memory.poke(memAddress+384, -16387);
+        do Memory.poke(memAddress+416, -24583);
+        do Memory.poke(memAddress+448, 16386);
+        do Memory.poke(memAddress+480, 16380);
+        return;
+    }
+}

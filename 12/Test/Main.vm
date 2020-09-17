@@ -1,0 +1,83 @@
+function Main.main 2
+push constant 0
+pop local 1
+push constant 0
+pop local 0
+push constant 0
+not
+call Screen.setColor 1
+pop temp 0
+label WHILE_EXP0
+push local 1
+push constant 200
+neg
+gt
+not
+if-goto WHILE_END0
+push constant 0
+pop local 0
+label WHILE_EXP1
+push local 0
+push constant 100
+lt
+not
+if-goto WHILE_END1
+push local 0
+call Output.printInt 1
+pop temp 0
+push constant 0
+call Screen.setColor 1
+pop temp 0
+push constant 256
+push local 0
+push constant 1
+sub
+add
+push constant 222
+push local 1
+add
+push constant 261
+push local 0
+push constant 1
+sub
+add
+push constant 227
+push local 1
+add
+call Screen.drawRectangle 4
+pop temp 0
+push constant 0
+not
+call Screen.setColor 1
+pop temp 0
+push constant 256
+push local 0
+add
+push constant 222
+push local 1
+add
+push constant 261
+push local 0
+add
+push constant 227
+push local 1
+add
+call Screen.drawRectangle 4
+pop temp 0
+push constant 150
+call Sys.wait 1
+pop temp 0
+push local 0
+push constant 1
+add
+pop local 0
+goto WHILE_EXP1
+label WHILE_END1
+push local 1
+push constant 1
+sub
+pop local 1
+goto WHILE_EXP0
+label WHILE_END0
+push constant 0
+return

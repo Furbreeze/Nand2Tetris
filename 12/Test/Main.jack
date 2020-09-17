@@ -1,0 +1,61 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/ScreenTest/Main.jack
+
+/** Test program for the OS Screen class. */
+class Main {
+
+    /** Draws a sample pictue on the screen using lines and circles. */
+    function void main() {
+        var int i, y;
+        // do Sys.error(69); // Fix weird artifacts below letters
+
+        let y = 0;
+        let i = 0;
+
+        //do Screen.drawRectangle(256 + i, 222 + y, 261 + i, 227 + y);
+
+        do Screen.setColor(true);
+        //do Screen.drawRectangle(0,125,511,255);
+
+        while (y > -200) {
+
+            //do Screen.setColor(false);
+            //do Screen.drawRectangle(0,0,511,255);
+            let i = 0;
+            while ( i < 100) {
+                do Output.printInt(i);
+                do Screen.setColor(false);
+                do Screen.drawRectangle(256 + (i-1), 222 + y, 261 + (i-1), 227 + y);
+                //do Screen.drawRectangle(230 + (i - 1), 229 + y, 280 + (i - 1), 236 + y);
+                
+                do Screen.setColor(true);
+                do Screen.drawRectangle(256 + i, 222 + y, 261 + i, 227 + y);
+                //do Screen.drawRectangle(230 + i, 229 + y, 280 + i, 236 + y);
+                do Sys.wait(150);
+                let i = i + 1;
+            }
+
+
+            
+            // let i = 0;
+            // while ( i < 100) {
+            //     do Output.printInt(i);
+            //     do Screen.setColor(true);
+            //     do Screen.drawRectangle(256 + (i-1), 222 + y, 261 + (i-1), 227 + y);
+            //     //do Screen.drawRectangle(230 + (i - 1), 229 + y, 280 + (i - 1), 236 + y);
+                
+            //     do Screen.setColor(false);
+            //     do Screen.drawRectangle(256 + i, 222 + y, 261 + i, 227 + y);
+            //     //do Screen.drawRectangle(230 + i, 229 + y, 280 + i, 236 + y);
+            //     do Sys.wait(150);
+            //     let i = i + 1;
+            // }
+
+            let y = y - 1;
+        }
+
+        return;
+    }
+}

@@ -1,0 +1,77 @@
+Score goes by num lines cleared, 20 lines wins
+Screen size 256px high, 512px wide (256 rows of 512)
+Tetris board size 16 blocks by 16 blocks due to fast sprite limitations
+Play field will be 100px wide and 200px tall
+Shapes are I, S, Z, O, J, L, T
+Screen (LTR) is 156px black, 100px white, 156px black
+Play field should be handled as array(20*10)
+Shapes are handled as Array (16)
+ + need to work out a rotation indexing scheme
+
+Tetris game fields
+ + int x
+ + int y
+ + int rotation
+ + int score        // score is number of lines cleared
+ + bool isFalling
+ + int pieceIndex
+
+Clear line
+ + Go through array of 1's and 0's, clear full line to 0's, add point to score
+
+Check Collision(int x, int y) : bool
+   - If any are previous 1's
+   - return false
+   - else 
+   - return true
+
+Update Gravity
+ + Need to detect collision / when to stop
+   - if check collision()
+   - set current piece 1's to 0's in fields
+   - update y
+   - set current piece 1's to 1's in field
+   - else
+   - don't update y
+   - set isFalling = false
+
+Handle Input
+
+1000 1111   1000100010001000 1111000000000000
+1000 0000   
+1000 0000 
+1000 0000
+
+0000 0000   0000000001001100 0000100011001000
+0000 1000 
+0100 1100 
+1110 1000 
+
+1000 1111 
+1000 0000 
+1000 0000 
+1000 0000
+
+0000 0000 
+0000 1000 
+0100 1100 
+1110 1000 
+
+y masks
+------------------
+[
+0000000000000000
+1111000000000000
+1111111100000000
+1111111111110000
+]
+
+x masks
+------------------
+[
+0000000000000000
+1000100010001000
+1100110011001100
+1110111011101110
+]
+

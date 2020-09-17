@@ -1,0 +1,307 @@
+class Tetris {
+   field int x, y, rotation, tetrominoIndex;
+   field int score, temp_lines, total_lines, level;
+   field Array board, piece, tempPiece;
+   field Tetromino tetromino;
+   field bool is_game_over;
+
+   constructor Tetris new() {
+        let x = 4;
+        let y = -4;
+        let rotation = 0;
+        let tetrominoIndex = 0;
+        let is_game_over = false;
+        let tetromino = Tetromino.new();
+        let piece = tetromino.get_piece(tetrominoIndex, rotation);
+        let score = 0;
+        let temp_lines = 0;
+        let total_lines = 0;
+        let level = 0;
+        do init_board();
+        return this;
+   }
+
+   method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+   }
+
+   method void tick(char input) {
+        do update_gravity();
+        do handle_input(input);
+        do clear_lines();
+        do update_score();
+        do game_over();
+        return;
+   }
+
+   method void update_gravity() {
+        var bool collided;
+
+        let collided = check_collision(x, y + 1, piece);
+
+        if (collided) {
+             do set_piece();
+        }
+        else {
+             let y = y + 1;
+        }
+
+        return;
+   }
+
+   method void handle_input(char input) {
+        var int tempX, tempR, tempY;
+        var bool collided;
+
+        // prevent LR for y = -4 (no OOB collision)
+        if (y < -3) {
+          return;
+        }
+
+        let tempX = x;
+        let tempY = y;
+        let tempR = rotation;
+        let tempPiece = piece;
+
+        if (input = 130) {
+          let tempX = x - 1;
+        }
+
+        if (input = 131) {
+          let tempR = rotation + 1;
+
+          if (tempR > 3) { // clamp x to 0 - 4
+            let tempR = 0;
+          }
+
+          let tempPiece = tetromino.get_piece(tetrominoIndex, tempR);
+        }
+
+        if (input = 132) {
+          let tempX = x + 1;
+        }
+
+        if (input = 133) {
+          let tempY = y + 1;
+        }
+
+        let collided = check_collision(tempX, tempY, tempPiece);
+
+        if (collided = false) {
+          let x = tempX;
+          let y = tempY;
+          let piece = tempPiece;
+          let rotation = tempR;
+        }
+        
+        return;
+   }
+
+   method void clear_lines() {
+        var int boardX, boardY, tempY, isFilled;
+        var Array row, tempRow;
+
+        let boardY = 15;
+        let isFilled = 1;
+
+        // update board
+        while (boardY > -1) {
+            let row = board[boardY];
+            let isFilled = 1;
+            
+            // loop through board and see if entire row is 1's
+            let boardX = 9;
+            while (boardX > -1) {
+               let isFilled = isFilled & (row[boardX] > 0);
+               let boardX = boardX - 1;
+            }
+
+            if (isFilled > 0) {
+               let tempY = boardY;
+               while (tempY > -1) {
+                    let row = board[tempY];
+                    let tempRow = board[tempY - 1];
+
+                    let boardX = 9;
+                    while (boardX > -1) {
+                         let row[boardX] = tempRow[boardX];
+                         let boardX = boardX - 1;
+                    }
+                    let tempY = tempY - 1;
+               }
+
+               // fill first row with zeros
+               let tempY = 0;
+               let row = board[tempY];
+               let boardX = 9;
+               while (boardX > -1) {
+                    let row[boardX] = 0;
+                    let boardX = boardX - 1;
+               }
+
+               let boardY = boardY + 1; // increment boardY
+               let temp_lines = temp_lines + 1;   // increment temp_lines to recheck this row
+            }
+
+            let isFilled = 1;           // reset isFilled
+            let boardY = boardY - 1;    // decrement boardY
+        }
+
+        return;
+   }        
+
+   method void update_score() {
+        if (temp_lines > 3) {
+             let score = score + (1200 * (level + 1));
+        }
+
+        if (temp_lines = 3) {
+             let score = score + (300 * (level + 1));
+        }
+
+        if (temp_lines = 2) {
+             let score = score + (100 * (level + 1));
+        }
+
+        if (temp_lines = 1) {
+             let score = score + (40 * (level + 1));
+        }
+
+        let total_lines = total_lines + temp_lines;
+        let temp_lines = 0;
+        let level = total_lines / 10;
+        return;
+   }
+
+   method bool game_over() {
+        return is_game_over;
+   }
+
+   method bool check_collision(int newX, int newY, Array tempP) {
+          var int pieceX, pieceY, xInd, yInd, pieceInd;
+          var bool hasCollided;
+          var Array row;
+
+          let pieceY = 0;
+          let pieceX = 0;
+          let hasCollided = false;
+
+          while (pieceY < 4) {
+               let yInd = newY + pieceY;
+               if ((yInd > -1)) {
+                    let row = board[yInd];
+                    let pieceX = 0;
+                    while (pieceX < 4) {
+                         let pieceInd = pieceX + (4 * pieceY);
+                         if ((tempP[pieceInd] > 0)) {
+                              let xInd = newX + pieceX;
+                              if ((xInd > -1) & (xInd < 10) & (yInd < 16)) {
+                                   let hasCollided = hasCollided | (row[xInd] > 0);
+                              }
+                              else {
+                                   return true;
+                              }
+                         }
+
+                         let pieceX = pieceX + 1;
+                    }
+               }
+
+               let pieceY = pieceY + 1;
+          }
+
+          return hasCollided;
+   }
+
+   method Array get_board() {
+        return board;
+   }
+
+   method void set_piece() {
+        var int boardX, boardY, xInd, yInd;
+        var Array row;
+
+        if (y < 0) {
+          let is_game_over = true;
+          return;
+        }
+
+        let boardY = 3;
+        let boardX = 3;
+        
+        while (boardY > -1) {
+            let boardX = 3;
+            while (boardX > -1) {
+               let xInd = x + boardX;
+               let yInd = y + boardY;
+               if ((xInd > -1) & (xInd < 10) & (yInd > -1) & (yInd < 16)) {
+                    let row = board[yInd];
+                    let row[xInd] = row[xInd] | piece[boardX + (4 * boardY)];
+               }
+                let boardX = boardX - 1;
+            }
+
+            let boardY = boardY - 1;
+        }
+
+        let tetrominoIndex = tetrominoIndex + 1;
+        let rotation = 0;
+        let x = 4;
+        let y = -4;
+        
+        if (tetrominoIndex = 7) {
+          let tetrominoIndex = 0;
+        }
+
+        let piece = tetromino.get_piece(tetrominoIndex, rotation);
+        return;
+   }
+
+   method int get_x() {
+        return x;
+   }
+
+   method int get_y() {
+        return y;
+   }
+
+   method Array get_piece() {
+        return piece;
+   }
+
+   method int get_score() {
+        return score;
+   }
+
+   method void init_board() {
+     var int boardX, boardY;
+     var Array row;
+     
+     let boardY = 15;
+     let board = Array.new(16);
+
+     while (boardY > -1) {
+          let board[boardY] = Array.new(10);
+          let row = board[boardY];
+
+          let boardX = 9;
+          while (boardX > -1) {
+               let row[boardX] = 0;
+               let boardX = boardX - 1;
+          }
+
+          let boardY = boardY - 1;
+     }
+
+     return;
+   }
+
+   method int get_level() {
+        return level;
+   }
+
+   method int get_lines() {
+        return total_lines;
+   }
+}

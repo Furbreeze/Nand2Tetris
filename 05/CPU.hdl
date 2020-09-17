@@ -1,0 +1,146 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/05/CPU.hdl
+
+/**
+ * The Hack CPU (Central Processing unit), consisting of an ALU,
+ * two registers named A and D, and a program counter named PC.
+ * The CPU is designed to fetch and execute instructions written in 
+ * the Hack machine language. In particular, functions as follows:
+ * Executes the inputted instruction according to the Hack machine 
+ * language specification. The D and A in the language specification
+ * refer to CPU-resident registers, while M refers to the external
+ * memory location addressed by A, i.e. to Memory[A]. The inM input 
+ * holds the value of this location. If the current instruction needs 
+ * to write a value to M, the value is placed in outM, the address 
+ * of the target location is placed in the addressM output, and the 
+ * writeM control bit is asserted. (When writeM==0, any value may 
+ * appear in outM). The outM and writeM outputs are combinational: 
+ * they are affected instantaneously by the execution of the current 
+ * instruction. The addressM and pc outputs are clocked: although they 
+ * are affected by the execution of the current instruction, they commit 
+ * to their new values only in the next time step. If reset==1 then the 
+ * CPU jumps to address 0 (i.e. pc is set to 0 in next time step) rather 
+ * than to the address resulting from executing the current instruction. 
+ */
+
+CHIP CPU {
+    IN  inM[16],         // M value input  (M = contents of RAM[A])
+        instruction[16], // Instruction for execution
+        reset;           // Signals whether to re-start the current
+                         // program (reset==1) or continue executing
+                         // the current program (reset==0).
+
+    OUT outM[16],        // M value output
+        writeM,          // Write to M? 
+        addressM[15],    // Address in data memory (of M)
+        pc[15];          // address of next instruction
+
+    PARTS:    
+
+    /************************/
+    /* INSTRUCTION DECODING */
+    /************************/
+    
+    // a[0], instruction[12], aOrMBit
+    Mux(a=false,b=instruction[12],sel=instruction[15],out=aOrMBit);
+    
+    // c[0], instruction[11], zx
+    Mux(a=false,b=instruction[11],sel=instruction[15],out=aluZX);
+    
+    // c[1], instruction[10], nx
+    Mux(a=false,b=instruction[10],sel=instruction[15],out=aluNX);
+
+    // c[2], instruction[9], zy
+    Mux(a=false,b=instruction[9],sel=instruction[15],out=aluZY);
+
+    // c[3], instruction[8], ny
+    Mux(a=false,b=instruction[8],sel=instruction[15],out=aluNY);
+
+    // c[4], instruction[7], f
+    Mux(a=false,b=instruction[7],sel=instruction[15],out=aluF);
+
+    // c[5], instruction[6], no
+    Mux(a=false,b=instruction[6],sel=instruction[15],out=aluNO);
+
+    // d[0], instruction[5], dLoadA
+    Mux(a=true,b=instruction[5],sel=instruction[15],out=dLoadA);
+
+    // d[1], instruction[4], dLoadD
+    Mux(a=false,b=instruction[4],sel=instruction[15],out=dLoadD);
+
+    // d[2], instruction[3], writeM
+    Mux(a=false,b=instruction[3],sel=instruction[15],out=writeM);
+
+    // j[0], instruction[2], jumpNeg
+    Mux(a=false,b=instruction[2],sel=instruction[15],out=jumpNeg);
+
+    // j[1], instruction[1], jumpZero
+    Mux(a=false,b=instruction[1],sel=instruction[15],out=jumpZero); 
+
+    // j[2], instruction[0], jumpPos
+    Mux(a=false,b=instruction[0],sel=instruction[15],out=jumpPos);
+
+    /****************************/
+    /* END INSTRUCTION DECODING */
+    /****************************/
+
+    
+    /****************************/
+    /*         ROUTING          */
+    /****************************/
+
+    // Choose between ALU output and instruction
+    Mux16(a=instruction, b=aluOutVal, sel=instruction[15], out=toAReg);
+
+    // Send AReg to PC, addressM, and Mux between A/M
+    ARegister(in=toAReg, load=dLoadA, out=aRegOut, out[0..14]=addressM, out=aRegtoPC);
+
+    // Choose between AReg output and inM
+    Mux16(a=aRegOut,b=inM,sel=aOrMBit,out=aluYVal);
+
+    // Send output of D-Register to ALU as X Val
+    DRegister(in=aluOutVal, load=dLoadD, out=aluXVal);
+
+    ALU(
+        x=aluXVal, y=aluYVal, 
+        zx=aluZX, nx=aluNX, 
+        zy=aluZY, ny=aluNY, 
+        f=aluF, no=aluNO, 
+        out=outM, out=aluOutVal, 
+        zr=zrFlag, ng=ngFlag
+    );
+
+    /****************************/
+    /*      END ROUTING         */
+    /****************************/
+
+
+
+
+    /***************************/
+    /*      PC LOAD BIT        */
+    /***************************/
+
+    // If output negative && instruction[2], load PC
+    And(a=ngFlag, b=jumpNeg, out=pcLoadNG);
+
+    // If output zero && instruction[1], load PC
+    And(a=zrFlag, b=jumpZero, out=pcLoadZR); 
+
+    // If output positive && instruction[0], load PC
+    Or(a=zrFlag,b=ngFlag,out=eitherZRNG);
+    Not(in=eitherZRNG, out=posFlag);
+    And(a=posFlag, b=jumpPos, out=pcLoadPos);
+
+    // OR load bits to determine loadneitherZRNG
+    Or(a=pcLoadZR,b=pcLoadNG,out=tempOrLoad);
+    Or(a=tempOrLoad,b=pcLoadPos,out=pcLoadBit);
+
+    PC(in=aRegtoPC, load=pcLoadBit, inc=true, reset=reset, out[0..14]=pc);
+
+    /***************************/
+    /*     END PC LOAD BIT     */
+    /***************************/
+}

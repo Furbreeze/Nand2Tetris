@@ -1,0 +1,211 @@
+class Tetromino {
+    field Array pieces, piece, temp;
+
+    constructor Tetromino new() {
+        do init_pieces();
+        return this;
+    }
+
+    method Array get_piece(int pieceIndex, int rotationIndex) {
+        var int py, px;
+
+        let piece = pieces[pieceIndex];
+        let py = 0;
+        let px = 0;
+
+        if (rotationIndex < 1) {
+            while (py < 4) {
+                let px = 0;
+                while (px < 4) {
+                    let temp[px + (py * 4)] = piece[px + (py * 4)];
+                    let px = px + 1;
+                }
+                let py = py + 1;
+            }
+        }
+
+        if (rotationIndex = 1) {
+            while (py < 4) {
+                let px = 0;
+                while (px < 4) {
+                    let temp[px + (py * 4)] = piece[12 + py - (px * 4)];
+                    let px = px + 1;
+                }
+                let py = py + 1;
+            }
+        }
+
+        if (rotationIndex = 2) {
+            while (py < 4) {
+                let px = 0;
+                while (px < 4) {
+                    let temp[px + (py * 4)] = piece[15 - (py * 4) - px];
+                    let px = px + 1;
+                }
+                let py = py + 1;
+            }
+        }
+
+        if (rotationIndex > 3) {
+            while (py < 4) {
+                let px = 0;
+                while (px < 4) {
+                    let temp[px + (py * 4)] = piece[3 - py + (px * 4)];
+                    let px = px + 1;
+                }
+                let py = py + 1;
+            }
+        }
+
+        return temp;
+    }
+    
+    method void init_pieces() {
+     let pieces = Array.new(7);
+
+     // I PIECE
+     let pieces[0] = Array.new(16);
+     let piece = pieces[0];
+     let piece[0] = 1;
+     let piece[1] = 0;
+     let piece[2] = 0;
+     let piece[3] = 0;
+     let piece[4] = 1;
+     let piece[5] = 0;
+     let piece[6] = 0;
+     let piece[7] = 0;
+     let piece[8] = 1;
+     let piece[9] = 0;
+     let piece[10] = 0;
+     let piece[11] = 0;
+     let piece[12] = 1;
+     let piece[13] = 0;
+     let piece[14] = 0;
+     let piece[15] = 0;
+
+     // L PIECE
+     let pieces[1] = Array.new(16);
+     let piece = pieces[1];
+     let piece[0] = 0;
+     let piece[1] = 0;
+     let piece[2] = 0;
+     let piece[3] = 0;
+     let piece[4] = 1;
+     let piece[5] = 0;
+     let piece[6] = 0;
+     let piece[7] = 0;
+     let piece[8] = 1;
+     let piece[9] = 0;
+     let piece[10] = 0;
+     let piece[11] = 0;
+     let piece[12] = 1;
+     let piece[13] = 1;
+     let piece[14] = 0;
+     let piece[15] = 0;
+
+     // J PIECE
+     let pieces[2] = Array.new(16);
+     let piece = pieces[2];
+     let piece[0] = 0;
+     let piece[1] = 0;
+     let piece[2] = 0;
+     let piece[3] = 0;
+     let piece[4] = 0;
+     let piece[5] = 0;
+     let piece[6] = 0;
+     let piece[7] = 1;
+     let piece[8] = 0;
+     let piece[9] = 0;
+     let piece[10] = 0;
+     let piece[11] = 1;
+     let piece[12] = 0;
+     let piece[13] = 0;
+     let piece[14] = 1;
+     let piece[15] = 1;
+
+     // S PIECE
+     let pieces[3] = Array.new(16);
+     let piece = pieces[3];
+     let piece[0] = 0;
+     let piece[1] = 0;
+     let piece[2] = 0;
+     let piece[3] = 0;
+     let piece[4] = 1;
+     let piece[5] = 0;
+     let piece[6] = 0;
+     let piece[7] = 0;
+     let piece[8] = 1;
+     let piece[9] = 1;
+     let piece[10] = 0;
+     let piece[11] = 0;
+     let piece[12] = 0;
+     let piece[13] = 1;
+     let piece[14] = 0;
+     let piece[15] = 0;
+
+     // Z PIECE
+     let pieces[4] = Array.new(16);
+     let piece = pieces[4];
+     let piece[0] = 0;
+     let piece[1] = 0;
+     let piece[2] = 0;
+     let piece[3] = 0;
+     let piece[4] = 0;
+     let piece[5] = 1;
+     let piece[6] = 0;
+     let piece[7] = 0;
+     let piece[8] = 1;
+     let piece[9] = 1;
+     let piece[10] = 0;
+     let piece[11] = 0;
+     let piece[12] = 1;
+     let piece[13] = 0;
+     let piece[14] = 0;
+     let piece[15] = 0;
+
+     // T PIECE
+     let pieces[5] = Array.new(16);
+     let piece = pieces[5];
+     let piece[0] = 0;
+     let piece[1] = 0;
+     let piece[2] = 0;
+     let piece[3] = 0;
+     let piece[4] = 0;
+     let piece[5] = 0;
+     let piece[6] = 0;
+     let piece[7] = 0;
+     let piece[8] = 0;
+     let piece[9] = 1;
+     let piece[10] = 0;
+     let piece[11] = 0;
+     let piece[12] = 1;
+     let piece[13] = 1;
+     let piece[14] = 1;
+     let piece[15] = 0;
+
+     // O PIECE
+     let pieces[6] = Array.new(16);
+     let piece = pieces[6];
+     let piece[0] = 0;
+     let piece[1] = 0;
+     let piece[2] = 0;
+     let piece[3] = 0;
+     let piece[4] = 0;
+     let piece[5] = 0;
+     let piece[6] = 0;
+     let piece[7] = 0;
+     let piece[8] = 1;
+     let piece[9] = 1;
+     let piece[10] = 0;
+     let piece[11] = 0;
+     let piece[12] = 1;
+     let piece[13] = 1;
+     let piece[14] = 0;
+     let piece[15] = 0;
+
+     let piece = pieces[0];
+     let temp = Array.new(16);
+
+     return;
+   }
+}
